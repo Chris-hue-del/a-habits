@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#FAF9F6">
+<title>原子習慣 — Atomic Habits</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600&family=Noto+Sans+TC:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --bg: #FAF9F6; --bg2: #F4F2ED; --bg3: #EDE9E1;
+    --card: #FFFFFF; --text: #2C2B27; --text2: #7A7870; --text3: #ABA99F;
+    --accent: #8B7355; --accent2: #C4A882; --accent-light: #F0E8DC;
+    --green: #5B7E5B; --green-light: #E8F0E8;
+    --amber: #B07A2C; --amber-light: #FBF1E0;
+    --red: #C25C5C; --red-light: #FAECEC;
+    --border: rgba(0,0,0,0.07); --radius: 16px; --radius-sm: 10px;
+  }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Noto Sans TC', sans-serif;
+    background: var(--bg); color: var(--text);
+    min-height: 100vh; max-width: 420px; margin: 0 auto;
+    overflow-x: hidden; position: relative;
+  }
+  .app { display: flex; flex-direction: column; min-height: 100vh; }
+
+  /* ── Header ── */
+  .header { padding: 52px 20px 14px; background: var(--bg); }
+  .header-top { display: flex; align-items: center; justify-content: space-between; }
+  .header-greeting { font-size: 12px; color: var(--text3); margin-bottom: 2px; }
+  .header-title { font-family: 'Noto Serif TC', serif; font-size: 26px; font-weight: 600; }
+  .streak-badge {
+    display: flex; align-items: center; gap: 5px;
+    background: var(--amber-light); border: 1px solid rgba(176,122,44,0.2);
+    padding: 6px 12px; border-radius: 20px;
+  }
+  .streak-badge span { font-size: 12px; font-weight: 500; color: var(--amber); }
+
+  /* ── Tabs ── */
+  .tabs {
+    display: flex; border-bottom: 1px solid var(--border);
+    background: var(--bg); position: sticky; top: 0; z-index: 50;
+  }
+  .tab {
+    flex: 1; padding: 11px 0 9px; text-align: center;
+    font-size: 12px; color: var(--text3); cursor: pointer;
+    border-bottom: 2px solid transparent; transition: all .2s;
+  }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 500; }
+
+  /* ── Content ── */
+  .content { flex: 1; padding: 20px; padding-bottom: 90px; }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .section-title {
+    font-size: 10px; font-weight: 500; color: var(--text3);
+    letter-spacing: .1em; text-transform: uppercase;
+    margin-bottom: 12px; margin-top: 22px;
+  }
+  .section-title:first-child { margin-top: 0; }
+
+  /* ── Ring ── */
+  .ring-container {
+    display: flex; align-items: center; gap: 20px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px; margin-bottom: 16px;
+  }
+  .ring-pct { font-family: 'Noto Serif TC', serif; font-size: 32px; font-weight: 600; }
+  .ring-label { font-size: 12px; color: var(--text3); margin-bottom: 2px; }
+  .ring-sublabel { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+  /* ── Habit Card ── */
+  .habit-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 15px; margin-bottom: 10px; position: relative;
+  }
+  .habit-card.completed { background: var(--green-light); border-color: rgba(91,126,91,.18); }
+  .habit-card-top { display: flex; align-items: flex-start; gap: 12px; }
+  .habit-icon {
+    width: 40px; height: 40px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 19px; flex-shrink: 0;
+  }
+  .habit-info { flex: 1; min-width: 0; }
+  .habit-name { font-size: 15px; font-weight: 500; margin-bottom: 3px; }
+  .habit-cue { font-size: 11px; color: var(--text3); margin-bottom: 7px; line-height: 1.4; }
+  .habit-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .habit-streak {
+    font-size: 10px; color: var(--green);
+    background: var(--green-light); padding: 2px 8px;
+    border-radius: 6px; font-weight: 500;
+  }
+  .habit-identity { font-size: 10px; color: var(--accent2); font-style: italic; }
+  .habit-check {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 2px solid var(--border); display: flex;
+    align-items: center; justify-content: center;
+    transition: all .25s; flex-shrink: 0; cursor: pointer;
+  }
+  .habit-check.done { background: var(--green); border-color: var(--green); }
+  .delete-area { display: flex; justify-content: flex-end; margin-top: 8px; }
+  .delete-btn {
+    font-size: 10px; color: var(--red); background: none;
+    border: none; cursor: pointer; font-family: inherit; padding: 2px 0;
+  }
+
+  /* ── Add FAB ── */
+  .add-btn {
+    position: fixed; bottom: 82px;
+    right: max(20px, calc(50vw - 190px));
+    width: 52px; height: 52px; background: var(--accent);
+    border: none; border-radius: 50%; display: flex;
+    align-items: center; justify-content: center;
+    cursor: pointer; box-shadow: 0 4px 18px rgba(139,115,85,.38);
+    z-index: 100; transition: transform .2s;
+  }
+  .add-btn:active { transform: scale(.93); }
+
+  /* ── Bottom Nav ── */
+  .bottom-nav {
+    position: fixed; bottom: 0;
+    left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 420px;
+    background: rgba(250,249,246,.96); backdrop-filter: blur(14px);
+    border-top: 1px solid var(--border);
+    display: flex; padding: 8px 0 22px; z-index: 99;
+  }
+  .nav-item {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; gap: 3px; cursor: pointer; padding: 4px 0;
+  }
+  .nav-label { font-size: 9px; color: var(--text3); }
+  .nav-item.active .nav-label { color: var(--accent); }
+  .nav-item.active svg { stroke: var(--accent) !important; }
+
+  /* ── Modal ── */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.42);
+    z-index: 200; display: flex; align-items: flex-end;
+    opacity: 0; pointer-events: none; transition: opacity .3s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--card); border-radius: 24px 24px 0 0;
+    padding: 20px 20px 40px; width: 100%;
+    transform: translateY(100%);
+    transition: transform .3s cubic-bezier(.32,.72,0,1);
+    max-height: 92vh; overflow-y: auto;
+  }
+  .modal-overlay.open .modal { transform: translateY(0); }
+  .modal-handle { width: 36px; height: 4px; background: var(--bg3); border-radius: 2px; margin: 0 auto 18px; }
+  .modal-title { font-family: 'Noto Serif TC', serif; font-size: 18px; font-weight: 600; margin-bottom: 18px; }
+  .form-label {
+    font-size: 10px; font-weight: 500; color: var(--text3);
+    letter-spacing: .07em; text-transform: uppercase;
+    margin-bottom: 7px; display: block;
+  }
+  .form-input {
+    width: 100%; background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 11px 14px;
+    font-size: 15px; color: var(--text); font-family: inherit;
+    outline: none; margin-bottom: 14px; transition: border-color .2s;
+  }
+  .form-input:focus { border-color: var(--accent2); background: var(--card); }
+  .emoji-grid { display: grid; grid-template-columns: repeat(8,1fr); gap: 6px; margin-bottom: 18px; }
+  .emoji-btn {
+    aspect-ratio: 1; border: 1.5px solid var(--border);
+    border-radius: 10px; background: var(--bg2); cursor: pointer;
+    font-size: 16px; display: flex; align-items: center;
+    justify-content: center; transition: all .15s;
+  }
+  .emoji-btn.selected { border-color: var(--accent); background: var(--accent-light); }
+  .color-grid { display: grid; grid-template-columns: repeat(6,1fr); gap: 8px; margin-bottom: 18px; }
+  .color-btn {
+    aspect-ratio: 1; border: 2px solid transparent;
+    border-radius: 50%; cursor: pointer; transition: all .15s;
+  }
+  .color-btn.selected { border-color: var(--text); transform: scale(1.12); }
+  .submit-btn {
+    width: 100%; background: var(--accent); color: #fff;
+    border: none; border-radius: var(--radius-sm);
+    padding: 14px; font-size: 15px; font-weight: 500;
+    font-family: inherit; cursor: pointer; transition: opacity .2s;
+  }
+  .submit-btn:active { opacity: .83; }
+
+  /* ── Stats ── */
+  .stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 18px; }
+  .stat-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 14px 8px; text-align: center;
+  }
+  .stat-num { font-family: 'Noto Serif TC', serif; font-size: 22px; font-weight: 600; }
+  .stat-lbl { font-size: 10px; color: var(--text3); margin-top: 2px; }
+  .heatmap-wrap {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px; margin-bottom: 10px;
+  }
+  .heatmap-label { font-size: 12px; font-weight: 500; margin-bottom: 10px; }
+  .heatmap-grid { display: grid; grid-template-columns: repeat(13,1fr); gap: 3px; }
+  .hm-cell { aspect-ratio: 1; border-radius: 3px; background: var(--bg3); }
+  .hm-cell.l1 { background: #C8D9C8; }
+  .hm-cell.l2 { background: #8FB48F; }
+  .hm-cell.l3 { background: #5B7E5B; }
+
+  /* ── Laws ── */
+  .law-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
+  .law-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 14px 12px;
+  }
+  .law-num { font-size: 9px; font-weight: 500; color: var(--text3); letter-spacing: .07em; margin-bottom: 4px; }
+  .law-title { font-size: 13px; font-weight: 500; margin-bottom: 3px; }
+  .law-desc { font-size: 11px; color: var(--text3); line-height: 1.5; }
+  .quote-card {
+    background: var(--accent-light); border: 1px solid rgba(139,115,85,.14);
+    border-radius: var(--radius); padding: 15px; margin-bottom: 9px;
+  }
+  .quote-text { font-family: 'Noto Serif TC', serif; font-size: 13px; color: var(--accent); line-height: 1.75; margin-bottom: 7px; }
+  .quote-src { font-size: 10px; color: var(--accent2); }
+
+  /* ── AI Coach ── */
+  .ai-prompt-btn {
+    width: 100%; background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 13px 14px;
+    display: flex; align-items: center; gap: 12px;
+    cursor: pointer; margin-bottom: 9px; transition: background .18s; text-align: left;
+  }
+  .ai-prompt-btn:active { background: var(--bg3); }
+  .ai-prompt-icon {
+    width: 34px; height: 34px; background: var(--accent-light);
+    border-radius: 9px; display: flex; align-items: center;
+    justify-content: center; font-size: 17px; flex-shrink: 0;
+  }
+  .ai-prompt-text { flex: 1; }
+  .ai-prompt-text strong { font-size: 13px; font-weight: 500; display: block; margin-bottom: 1px; }
+  .ai-prompt-text span { font-size: 11px; color: var(--text3); }
+  .ai-response-box {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px; margin-top: 4px;
+  }
+  .ai-response-box p { font-size: 13px; color: var(--text2); line-height: 1.75; }
+  .ai-loading { display: flex; gap: 5px; align-items: center; padding: 6px 0; }
+  .ai-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent2); animation: bounce 1.1s infinite; }
+  .ai-dot:nth-child(2) { animation-delay: .18s; }
+  .ai-dot:nth-child(3) { animation-delay: .36s; }
+  @keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-7px)} }
+
+  /* ── Empty ── */
+  .empty { text-align: center; padding: 52px 20px; }
+  .empty-icon { font-size: 42px; margin-bottom: 12px; }
+  .empty-title { font-size: 16px; font-weight: 500; margin-bottom: 8px; }
+  .empty-sub { font-size: 13px; color: var(--text3); line-height: 1.65; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <div class="header-greeting" id="greeting">今天是好日子</div>
+        <div class="header-title">我的習慣</div>
+      </div>
+      <div class="streak-badge">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#B07A2C" stroke-width="2.5">
+          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+        </svg>
+        <span id="streak-text">0 天連續</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab active"  onclick="switchTab('today')">今日</div>
+    <div class="tab"         onclick="switchTab('stats')">統計</div>
+    <div class="tab"         onclick="switchTab('laws')">定律</div>
+    <div class="tab"         onclick="switchTab('ai')">AI 教練</div>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+
+    <!-- 今日 -->
+    <div class="page active" id="page-today">
+      <div class="ring-container">
+        <svg width="72" height="72" viewBox="0 0 72 72" style="flex-shrink:0">
+          <circle cx="36" cy="36" r="28" fill="none" stroke="#EDE9E1" stroke-width="8"/>
+          <circle cx="36" cy="36" r="28" fill="none" stroke="#8B7355" stroke-width="8"
+            stroke-linecap="round" stroke-dasharray="175.93" stroke-dashoffset="175.93"
+            id="ring-progress" transform="rotate(-90 36 36)"
+            style="transition:stroke-dashoffset .6s ease"/>
+        </svg>
+        <div>
+          <div class="ring-label">今日完成</div>
+          <div class="ring-pct" id="ring-pct">0%</div>
+          <div class="ring-sublabel" id="ring-sub">共 0 個習慣</div>
+        </div>
+      </div>
+      <div class="section-title">今日習慣</div>
+      <div id="habits-list"></div>
+      <div id="empty-today" class="empty" style="display:none">
+        <div class="empty-icon">🌱</div>
+        <div class="empty-title">從第一個習慣開始</div>
+        <div class="empty-sub">點右下角 <b>+</b>，建立你的第一個原子習慣</div>
+      </div>
+    </div>
+
+    <!-- 統計 -->
+    <div class="page" id="page-stats">
+      <div class="stats-row" id="stats-row"></div>
+      <div class="section-title">過去 91 天紀錄</div>
+      <div class="heatmap-wrap">
+        <div class="heatmap-label">完成率熱圖</div>
+        <div class="heatmap-grid" id="heatmap-grid"></div>
+      </div>
+      <div class="section-title">習慣明細</div>
+      <div id="stats-detail"></div>
+    </div>
+
+    <!-- 定律 -->
+    <div class="page" id="page-laws">
+      <div class="section-title">四大定律</div>
+      <div class="law-cards">
+        <div class="law-card"><div class="law-num">定律一</div><div class="law-title">讓它顯而易見</div><div class="law-desc">設計環境，讓好習慣的線索顯而易見</div></div>
+        <div class="law-card"><div class="law-num">定律二</div><div class="law-title">讓它有吸引力</div><div class="law-desc">誘惑捆綁，配對喜歡與需要做的事</div></div>
+        <div class="law-card"><div class="law-num">定律三</div><div class="law-title">讓它容易執行</div><div class="law-desc">減少阻力，從兩分鐘版本開始</div></div>
+        <div class="law-card"><div class="law-num">定律四</div><div class="law-title">讓它令人滿足</div><div class="law-desc">立即獎勵，追蹤習慣，不要中斷</div></div>
+      </div>
+      <div class="section-title">書中金句</div>
+      <div id="quotes-list"></div>
+    </div>
+
+    <!-- AI 教練 -->
+    <div class="page" id="page-ai">
+      <div class="section-title">Gemini AI 習慣教練</div>
+      <div id="ai-buttons"></div>
+      <div id="ai-output"></div>
+    </div>
+
+  </div><!-- /content -->
+
+  <!-- FAB -->
+  <button class="add-btn" id="add-btn-fab" onclick="openModal()">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
+      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+  </button>
+
+  <!-- Bottom Nav -->
+  <nav class="bottom-nav">
+    <div class="nav-item active" id="nav-0" onclick="switchNav('today',0)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ABA99F" stroke-width="1.8" stroke-linecap="round">
+        <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
+        <rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>
+      </svg>
+      <span class="nav-label">今日</span>
+    </div>
+    <div class="nav-item" id="nav-1" onclick="switchNav('stats',1)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ABA99F" stroke-width="1.8" stroke-linecap="round">
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+      </svg>
+      <span class="nav-label">統計</span>
+    </div>
+    <div class="nav-item" id="nav-2" onclick="switchNav('laws',2)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ABA99F" stroke-width="1.8" stroke-linecap="round">
+        <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+      </svg>
+      <span class="nav-label">定律</span>
+    </div>
+    <div class="nav-item" id="nav-3" onclick="switchNav('ai',3)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ABA99F" stroke-width="1.8" stroke-linecap="round">
+        <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
+      </svg>
+      <span class="nav-label">教練</span>
+    </div>
+  </nav>
+</div><!-- /app -->
+
+<!-- Add Habit Modal -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">新增習慣</div>
+    <label class="form-label">習慣名稱 *</label>
+    <input class="form-input" id="habit-name" placeholder="例如：每天冥想 10 分鐘"/>
+    <label class="form-label">觸發線索（完成 X 後，我會…）</label>
+    <input class="form-input" id="habit-cue" placeholder="例如：早餐後，我會冥想"/>
+    <label class="form-label">身份認同（我是一個…的人）</label>
+    <input class="form-input" id="habit-identity" placeholder="例如：我是一個注重健康的人"/>
+    <label class="form-label">選擇圖示</label>
+    <div class="emoji-grid" id="emoji-grid"></div>
+    <label class="form-label">選擇顏色</label>
+    <div class="color-grid" id="color-grid"></div>
+    <button class="submit-btn" onclick="addHabit()">✦ 建立習慣</button>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════
+   常數
+═══════════════════════════════════════════ */
+const EMOJIS = ['🧘','📚','💪','🏃','💧','🥗','😴','✍️','🎯','🎵','🌿','☀️',
+                '🫁','🧠','❤️','🌊','🧹','🐕','🎨','🛏️','🚴','🌅','🍵','📝'];
+const COLORS = ['#E8D5C4','#C4D9C4','#C4D4E8','#E8C4C4','#D9C4E8','#E8E4C4',
+                '#C4E8E4','#E8D4C4','#D4C4E8','#C4E8D4','#E4C4D4','#CACFE8'];
+const QUOTES = [
+  { t:'你不需要成為行為改變的受害者。你可以成為設計師。', s:'第一章' },
+  { t:'每一個習慣都是由線索、渴望、回應和獎賞四步驟組成的回饋循環。', s:'第三章' },
+  { t:'每次你執行一個習慣，你就在投票給你想成為的那種人。', s:'第二章' },
+  { t:'每天進步 1%，一年後你會進步 37 倍。', s:'第一章' },
+  { t:'你不會上升到目標的水準，而是下降到系統的水準。', s:'第一章' },
+  { t:'減少摩擦力。讓最常見的行動也是最容易的行動。', s:'第十二章' },
+  { t:'習慣是身份認同的具體化。每一次整理床鋪，你都在強化自己是有條理的人。', s:'第二章' },
+  { t:'兩分鐘法則：把任何習慣縮減到兩分鐘版本。', s:'第十三章' },
+];
+
+let selEmoji = '🎯', selColor = COLORS[0];
+
+/* ═══════════════════════════════════════════
+   Storage helpers
+═══════════════════════════════════════════ */
+const ls = {
+  get: (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } },
+  set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) { console.warn(e); } },
+};
+const getHabits  = ()  => ls.get('ah_habits', []);
+const saveHabits = (h) => ls.set('ah_habits', h);
+const getHist    = ()  => ls.get('ah_history', {});
+const saveHist   = (h) => ls.set('ah_history', h);
+const todayKey   = ()  => new Date().toISOString().slice(0, 10);
+
+function markToday(id, done) {
+  const h = getHist(), k = todayKey();
+  if (!h[k]) h[k] = {};
+  h[k][id] = done;
+  saveHist(h);
+}
+function isTodayDone(id) { const h = getHist(); return !!(h[todayKey()] && h[todayKey()][id]); }
+
+function getStreak() {
+  const habits = getHabits(), hist = getHist();
+  if (!habits.length) return 0;
+  let streak = 0;
+  for (let i = 0; i < 365; i++) {
+    const k = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+    if (habits.some(h => (hist[k] || {})[h.id])) streak++;
+    else if (i > 0) break;
+  }
+  return streak;
+}
+function getHabitStreak(id) {
+  const hist = getHist();
+  let s = 0;
+  for (let i = 0; i < 365; i++) {
+    const k = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+    if ((hist[k] || {})[id]) s++;
+    else if (i > 0) break;
+  }
+  return s;
+}
+
+/* ═══════════════════════════════════════════
+   Navigation
+═══════════════════════════════════════════ */
+function switchTab(tab) {
+  ['today','stats','laws','ai'].forEach((t, i) => {
+    document.querySelectorAll('.tab')[i].classList.toggle('active', t === tab);
+  });
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + tab).classList.add('active');
+  document.getElementById('add-btn-fab').style.display = tab === 'today' ? 'flex' : 'none';
+  if (tab === 'today') renderToday();
+  if (tab === 'stats') renderStats();
+  if (tab === 'laws')  renderLaws();
+  if (tab === 'ai')    renderAI();
+}
+function switchNav(tab, idx) {
+  document.querySelectorAll('.nav-item').forEach((n, i) => {
+    n.classList.toggle('active', i === idx);
+    const svg = n.querySelector('svg');
+    if (svg) svg.setAttribute('stroke', i === idx ? 'var(--accent)' : '#ABA99F');
+  });
+  switchTab(tab);
+}
+
+/* ═══════════════════════════════════════════
+   Today
+═══════════════════════════════════════════ */
+function renderToday() {
+  const habits = getHabits();
+  const done   = habits.filter(h => isTodayDone(h.id)).length;
+  const total  = habits.length;
+  const pct    = total ? Math.round(done / total * 100) : 0;
+  const circ   = 175.93;
+
+  document.getElementById('ring-progress').style.strokeDashoffset = circ - circ * pct / 100;
+  document.getElementById('ring-pct').textContent  = pct + '%';
+  document.getElementById('ring-sub').textContent  = `${done} / ${total} 個習慣`;
+  document.getElementById('streak-text').textContent = getStreak() + ' 天連續';
+
+  const hr = new Date().getHours();
+  document.getElementById('greeting').textContent =
+    hr < 12 ? '早安，新的一天開始了' : hr < 18 ? '下午好，繼續保持！' : '晚上好，今日還有機會';
+
+  const list  = document.getElementById('habits-list');
+  const empty = document.getElementById('empty-today');
+  if (!total) { list.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+
+  list.innerHTML = habits.map(h => {
+    const done = isTodayDone(h.id);
+    const str  = getHabitStreak(h.id);
+    return `<div class="habit-card ${done ? 'completed' : ''}">
+      <div class="habit-card-top">
+        <div class="habit-icon" style="background:${h.color}">${h.emoji}</div>
+        <div class="habit-info">
+          <div class="habit-name">${esc(h.name)}</div>
+          ${h.cue ? `<div class="habit-cue">⚡ ${esc(h.cue)}</div>` : ''}
+          <div class="habit-meta">
+            ${str > 0 ? `<span class="habit-streak">🔥 ${str} 天</span>` : ''}
+            ${h.identity ? `<span class="habit-identity">${esc(h.identity)}</span>` : ''}
+          </div>
+        </div>
+        <div class="habit-check ${done ? 'done' : ''}" onclick="toggleHabit('${h.id}')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+            stroke="${done ? 'white' : '#CCC'}" stroke-width="2.5" stroke-linecap="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+      </div>
+      <div class="delete-area">
+        <button class="delete-btn" onclick="deleteHabit('${h.id}')">刪除</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function toggleHabit(id) { markToday(id, !isTodayDone(id)); renderToday(); }
+function deleteHabit(id) {
+  if (!confirm('確定要刪除這個習慣嗎？')) return;
+  saveHabits(getHabits().filter(h => h.id !== id));
+  renderToday();
+}
+
+/* ═══════════════════════════════════════════
+   Stats
+═══════════════════════════════════════════ */
+function renderStats() {
+  const habits = getHabits(), hist = getHist();
+  const keys = Object.keys(hist);
+  let totalDone = 0;
+  keys.forEach(k => { totalDone += Object.values(hist[k]).filter(Boolean).length; });
+
+  document.getElementById('stats-row').innerHTML = `
+    <div class="stat-card"><div class="stat-num">${habits.length}</div><div class="stat-lbl">習慣數量</div></div>
+    <div class="stat-card"><div class="stat-num">${getStreak()}</div><div class="stat-lbl">連續天數</div></div>
+    <div class="stat-card"><div class="stat-num">${totalDone}</div><div class="stat-lbl">累計完成</div></div>`;
+
+  document.getElementById('heatmap-grid').innerHTML = Array.from({length:91}, (_,i) => {
+    const k   = new Date(Date.now() - (90-i) * 86400000).toISOString().slice(0,10);
+    const cnt = Object.values(hist[k] || {}).filter(Boolean).length;
+    return `<div class="hm-cell ${cnt===0?'':cnt===1?'l1':cnt<=3?'l2':'l3'}" title="${k}: ${cnt}個"></div>`;
+  }).join('');
+
+  document.getElementById('stats-detail').innerHTML = habits.map(h => {
+    const s = getHabitStreak(h.id);
+    let total = 0;
+    keys.forEach(k => { if ((hist[k] || {})[h.id]) total++; });
+    return `<div class="habit-card">
+      <div class="habit-card-top">
+        <div class="habit-icon" style="background:${h.color}">${h.emoji}</div>
+        <div class="habit-info">
+          <div class="habit-name">${esc(h.name)}</div>
+          <div class="habit-meta">
+            <span class="habit-streak">🔥 連續 ${s} 天</span>
+            <span style="font-size:11px;color:var(--text3)">共完成 ${total} 次</span>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('') || '<div style="text-align:center;padding:32px;color:var(--text3);font-size:13px">尚無資料</div>';
+}
+
+/* ═══════════════════════════════════════════
+   Laws
+═══════════════════════════════════════════ */
+function renderLaws() {
+  document.getElementById('quotes-list').innerHTML = QUOTES.map(q =>
+    `<div class="quote-card">
+      <div class="quote-text">「${q.t}」</div>
+      <div class="quote-src">— 原子習慣 ${q.s}</div>
+    </div>`
+  ).join('');
+}
+
+/* ═══════════════════════════════════════════
+   AI Coach
+═══════════════════════════════════════════ */
+function renderAI() {
+  const names = getHabits().map(h => h.name).join('、') || '（尚無習慣）';
+  const str   = getStreak();
+  const prompts = [
+    { icon:'🔍', title:'分析我的習慣系統',  desc:'根據四大定律提供改善建議',
+      prompt:`我有以下習慣：${names}。連續 ${str} 天。請根據《原子習慣》四大定律分析並給出具體改善建議。` },
+    { icon:'🪜', title:'設計習慣疊加',      desc:'if-then 公式串聯習慣鏈',
+      prompt:`請用《原子習慣》的習慣疊加法，為這些習慣：${names}，設計一個 if-then 串聯鏈。` },
+    { icon:'🧠', title:'強化身份認同',      desc:'重塑成功者的自我形象',
+      prompt:`請為這些習慣：${names}，寫出對應的身份認同陳述，並說明如何真正相信這些身份。` },
+    { icon:'📐', title:'環境設計建議',      desc:'讓好習慣線索顯而易見',
+      prompt:`請針對習慣：${names}，給出具體的環境設計建議，讓線索更明顯、習慣更容易執行。` },
+    { icon:'⏱️', title:'兩分鐘版本設計',    desc:'讓任何習慣都能輕鬆開始',
+      prompt:`請幫我把這些習慣：${names}，各設計一個「兩分鐘版本」，讓我在最困難的日子也能執行。` },
+  ];
+  document.getElementById('ai-buttons').innerHTML = prompts.map(p =>
+    `<button class="ai-prompt-btn" onclick='callAI(${JSON.stringify(p.prompt)})'>
+      <div class="ai-prompt-icon">${p.icon}</div>
+      <div class="ai-prompt-text">
+        <strong>${p.title}</strong>
+        <span>${p.desc}</span>
+      </div>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2" stroke-linecap="round">
+        <polyline points="9 18 15 12 9 6"/>
+      </svg>
+    </button>`
+  ).join('');
+}
+
+async function callAI(prompt) {
+  const out = document.getElementById('ai-output');
+  out.innerHTML = `<div class="ai-response-box">
+    <div class="ai-loading"><div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div></div>
+  </div>`;
+  try {
+    const res  = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'API error');
+    out.innerHTML = `<div class="ai-response-box"><p>${data.text.replace(/\n/g,'<br>')}</p></div>`;
+  } catch (e) {
+    out.innerHTML = `<div class="ai-response-box"><p style="color:var(--red)">⚠ ${e.message}</p></div>`;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   Modal
+═══════════════════════════════════════════ */
+function openModal() {
+  document.getElementById('modal-overlay').classList.add('open');
+  renderEmojiGrid(); renderColorGrid();
+  ['habit-name','habit-cue','habit-identity'].forEach(id => document.getElementById(id).value = '');
+  setTimeout(() => document.getElementById('habit-name').focus(), 320);
+}
+function closeModalOutside(e) { if (e.target.id === 'modal-overlay') closeModal(); }
+function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+
+function renderEmojiGrid() {
+  document.getElementById('emoji-grid').innerHTML = EMOJIS.map(e =>
+    `<button class="emoji-btn ${e===selEmoji?'selected':''}" onclick="selEmoji='${e}';renderEmojiGrid()">${e}</button>`
+  ).join('');
+}
+function renderColorGrid() {
+  document.getElementById('color-grid').innerHTML = COLORS.map(c =>
+    `<div class="color-btn ${c===selColor?'selected':''}" style="background:${c}"
+      onclick="selColor='${c}';renderColorGrid()"></div>`
+  ).join('');
+}
+
+function addHabit() {
+  const nameEl = document.getElementById('habit-name');
+  const name   = nameEl.value.trim();
+  if (!name) { nameEl.style.borderColor = 'var(--red)'; nameEl.focus(); return; }
+  nameEl.style.borderColor = '';
+  const habits = getHabits();
+  habits.push({
+    id:       Date.now().toString(),
+    name,
+    cue:      document.getElementById('habit-cue').value.trim(),
+    identity: document.getElementById('habit-identity').value.trim(),
+    emoji:    selEmoji,
+    color:    selColor,
+    created:  todayKey(),
+  });
+  saveHabits(habits);
+  closeModal();
+  renderToday();
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+  if (e.key === 'Enter' && document.getElementById('modal-overlay').classList.contains('open')) addHabit();
+});
+
+/* ── Init ── */
+renderToday();
+renderLaws();
+</script>
+</body>
+</html>
